@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>History UNO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800;900&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: playful classroom game, but tidy and calm enough for a lesson
+   IDEA: the navy UNO card table from the printed deck, four category colours on it
+   PICTURE: the live game table itself — opponent hand, piles, your hand
+   COLOUR and TYPE: navy felt #0b1446, card red/yellow/green/blue, teal support; Montserrat + PT Sans
+   LAYOUT: tabs on top, table first, question as a card-shaped overlay */
+:root{color-scheme:dark;--bg:#0a1240;--felt:#0f1b5c;--panel:#16226b;--line:#2a3a8f;--ink:#f4f6ff;--mute:#aab4e8;--teal:#1fb0b7;
+--R:#e5322d;--Y:#f6c315;--G:#33b878;--B:#1d50e6;--ok:#3ad08a;--bad:#ff5a5a}
+:root[data-theme=light],:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3,.logo,.big,.cn{font-family:Montserrat,"PT Sans",sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--Y);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;padding:14px max(4vw,14px);border-bottom:1px solid var(--line)}
+.logo{font-weight:900;font-size:22px;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
+.oval{width:30px;height:20px;border-radius:50%;transform:rotate(-35deg);background:conic-gradient(var(--B) 0 25%,var(--G) 0 50%,var(--Y) 0 75%,var(--R) 0)}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav a{color:var(--mute);text-decoration:none;padding:10px 14px;border-radius:999px;font-weight:700;min-height:44px;display:inline-flex;align-items:center}
+nav a.on{background:var(--panel);color:var(--ink)}
+main{max-width:1180px;margin:0 auto;padding:20px max(4vw,14px) 48px}
+.view{display:none}.view.on{display:block}
+h2{font-size:clamp(26px,4vw,38px);line-height:1.08;margin:0 0 8px;text-wrap:balance}
+p.lead{color:var(--mute);margin:0 0 20px;max-width:68ch}
+.btn{border:0;border-radius:12px;padding:12px 20px;min-height:44px;font-weight:700;background:var(--Y);color:#1a1400}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.teal{background:var(--teal);color:#032325}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:#0b1446;border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-height:44px;width:100%}
+label{display:block;font-weight:700;margin:0 0 6px}
+/* start */
+.start{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+.form{background:var(--panel);border-radius:20px;padding:24px;display:grid;gap:16px}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.seg button{border:1px solid var(--line);background:#0b1446;border-radius:10px;min-height:44px;font-weight:700}
+.seg button.on{background:var(--teal);color:#032325;border-color:var(--teal)}
+.fan{position:relative;height:300px}
+.fan .card{position:absolute;left:50%;top:40px;width:120px;height:180px;transform-origin:50% 120%}
+/* cards */
+.card{position:relative;width:74px;height:110px;border-radius:12px;border:4px solid #fff;padding:0;display:grid;place-items:center;box-shadow:0 6px 14px #0006;flex:none;transition:transform .15s}
+.card .cn{position:absolute;top:3px;left:6px;font-weight:900;font-size:14px;color:#fff}
+.card .big{font-weight:900;font-size:34px;color:#fff;text-shadow:0 2px 0 #0004;line-height:1}
+.card .ck{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:#fff;opacity:.92}
+.c-R{background:var(--R)}.c-Y{background:var(--Y)}.c-G{background:var(--G)}.c-B{background:var(--B)}
+.c-Y .cn,.c-Y .big,.c-Y .ck{color:#2a1f00;text-shadow:none}
+.c-W{background:#0b1446;color:#fff}
+.card.c-W::before,.back::before{content:"";position:absolute;inset:22% 12%;border-radius:50%;transform:rotate(-35deg);background:conic-gradient(var(--B) 0 25%,var(--G) 0 50%,var(--Y) 0 75%,var(--R) 0)}
+.c-W .big{position:relative;font-size:30px}
+.back{background:#0b1446}
+.back::after{content:"UNO";position:relative;font:900 13px Montserrat,sans-serif;color:#fff;background:#0b1446;padding:1px 4px;border-radius:4px}
+.fan .card .big{font-size:56px}.fan .card .ck{font-size:13px}.fan .card .cn{font-size:20px}
+/* table */
+.table{background:radial-gradient(120% 90% at 50% 40%,#1a2a85,var(--felt) 60%,#0a1240);border:1px solid var(--line);border-radius:24px;padding:18px;display:grid;gap:18px}
+.bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+.chip{background:#0b1446;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px;white-space:nowrap}
+.opp{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.backs{display:flex}.backs .card{width:44px;height:66px;border-width:3px;margin-right:-22px}
+.backs .card::after{font-size:9px}
+.mid{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:18px;align-items:center}
+.pilebox{display:grid;justify-items:center;gap:8px}
+.pile .card{width:104px;height:154px}.pile .card .big{font-size:48px}.pile .card .ck{font-size:12px}.pile .card .cn{font-size:18px}
+.deck{cursor:pointer}.deck:disabled{cursor:not-allowed;opacity:.6}
+.deck.pulse{animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:translateY(-6px);box-shadow:0 0 0 6px #f6c31555,0 10px 20px #0008}}
+.curc{display:inline-flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid #fff}
+.log{background:#0b1446cc;border:1px solid var(--line);border-radius:16px;padding:14px;min-height:154px}
+.log h3{margin:0 0 6px;font-size:15px;color:var(--mute);font-weight:700}
+.log .q{font-weight:700;margin:4px 0}
+.log .r-ok{color:var(--ok)}.log .r-bad{color:var(--bad)}
+.turn{font-family:Montserrat,sans-serif;font-weight:800;font-size:18px}
+.hand{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px 0 4px}
+.hand .card:not(:disabled):hover{transform:translateY(-8px)}
+.hand .card.can{box-shadow:0 0 0 3px var(--Y),0 8px 16px #0008}
+.hand .card:disabled{opacity:.55;cursor:default}
+.hand.wait .card{opacity:.55}
+.banner{position:fixed;left:50%;top:22%;transform:translate(-50%,-50%) scale(.8);font:900 clamp(36px,8vw,72px) Montserrat,sans-serif;color:var(--Y);text-shadow:0 4px 0 #0008;pointer-events:none;opacity:0;transition:.25s;z-index:60;white-space:nowrap}
+.banner.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+/* overlay */
+.ov{position:fixed;inset:0;background:#030820d9;display:none;place-items:center;padding:16px;z-index:50;overflow:auto}
+.ov.on{display:grid}
+.qcard{width:min(560px,100%);background:#fff;color:#14183a;border-radius:22px;overflow:hidden;box-shadow:0 20px 50px #000a}
+.qhead{display:flex;align-items:center;gap:12px;padding:14px 18px;color:#fff;font-weight:800;font-family:Montserrat,sans-serif}
+.qhead .sym{font-size:28px;font-weight:900}
+.qhead.c-Y{color:#2a1f00}
+.qbody{padding:18px 20px 20px;display:grid;gap:12px}
+.qtext{font-size:19px;font-weight:700;line-height:1.35}
+.qdate{font:900 30px Montserrat,sans-serif;color:var(--R)}
+.opts{display:grid;gap:8px}
+.opts button{text-align:left;border:2px solid #d6daf0;background:#f5f6fc;color:#14183a;border-radius:12px;padding:11px 14px;min-height:48px;font-weight:700}
+.opts button:hover:not(:disabled){border-color:#7d88c8}
+.opts button.ok{background:#dff7ea;border-color:#1f9d5c}
+.opts button.bad{background:#ffe3e3;border-color:#d63b3b}
+.opts button:disabled{cursor:default}
+.fb{font-weight:700;min-height:1.5em}.fb.ok{color:#137a45}.fb.bad{color:#c22a2a}
+.colors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.colors button{min-height:72px;border-radius:14px;border:0;font-weight:800;color:#fff}
+.endbox{width:min(520px,100%);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px;display:grid;gap:14px}
+.endbox h2{margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:#0b1446;border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font:900 26px Montserrat,sans-serif}
+.stat span{font-size:13px;color:var(--mute)}
+.note{font-size:14px;color:var(--mute)}
+.code{font-family:ui-monospace,monospace;font-size:13px;min-height:84px;resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+/* results */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:8px 0 20px}
+.kpi{background:var(--panel);border-radius:16px;padding:16px}
+.kpi b{display:block;font:900 clamp(24px,3.4vw,34px) Montserrat,sans-serif}
+.kpi span{color:var(--mute);font-size:14px}
+.filters{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr) auto;gap:10px;align-items:end;margin-bottom:16px}
+.box{background:var(--panel);border-radius:18px;padding:18px;margin-bottom:18px}
+.box h3{margin:0 0 10px;font-size:20px;font-family:Montserrat,sans-serif}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--mute);font-weight:700;font-size:13px}
+td.n,th.n{text-align:right;white-space:nowrap}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:700;white-space:nowrap}
+.pill.w{background:#1f6b46}.pill.l{background:#6b2a2a}.pill.s{background:#3a3f63}
+.meter{height:8px;background:#0b1446;border-radius:9px;overflow:hidden;margin-top:4px;min-width:60px}
+.meter i{display:block;height:100%;background:var(--teal)}
+.empty{color:var(--mute);padding:10px 0}
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.rules .box p,.rules .box li{color:#d8ddf8}
+.legend{display:grid;gap:8px}
+.legend div{display:flex;gap:10px;align-items:center}
+.scroll{overflow-x:auto}
+@media(max-width:820px){.start{grid-template-columns:minmax(0,1fr)}.fan{height:230px;order:-1}.fan .card{width:96px;height:144px}
+.mid{grid-template-columns:auto auto}.log{grid-column:1/-1;min-height:0}
+.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:minmax(0,1fr)}.rules{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.card{width:58px;height:88px;border-width:3px}.card .big{font-size:26px}.card .ck{font-size:8px}
+.pile .card{width:84px;height:124px}.pile .card .big{font-size:38px}.table{padding:12px}
+table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;color:var(--mute)}.stack td:empty{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header>
+  <div class="logo"><span class="oval"></span>HISTORY UNO</div>
+  <nav>
+    <a href="#play" data-v="play">Ойын</a>
+    <a href="#results" data-v="results">Нәтижелер</a>
+    <a href="#rules" data-v="rules">Ереже</a>
+  </nav>
+</header>
+<main>
+  <section class="view" id="v-play">
+    <div id="startScr" class="start">
+      <div>
+        <h2>Қазақстан тарихы бойынша UNO</h2>
+        <p class="lead">Ботпен ойнаңыз: картаны тастау үшін оның сұрағына дұрыс жауап беру керек. Қолындағы карталардан бірінші құтылған ойыншы жеңеді. Нәтижеңіз мұғалімнің кестесіне сақталады.</p>
+        <div class="form">
+          <div><label for="fName">Аты-жөніңіз</label><input id="fName" autocomplete="name" placeholder="Мысалы: Айгерім Сейітқызы" maxlength="60"></div>
+          <div><label for="fCls">Сынып</label><input id="fCls" placeholder="Мысалы: 9 «Ә»" maxlength="20"></div>
+          <div><label>Боттың деңгейі</label>
+            <div class="seg" id="diffSeg"><button data-d="easy">Жеңіл</button><button data-d="mid" class="on">Орташа</button><button data-d="hard">Қиын</button></div></div>
+          <div><label>Қолдағы карта саны</label>
+            <div class="seg" id="handSeg"><button data-h="5">5</button><button data-h="7" class="on">7</button><button data-h="9">9</button></div></div>
+          <button class="btn" id="startBtn">Ойынды бастау</button>
+          <div class="note" id="startErr"></div>
+        </div>
+      </div>
+      <div class="fan" id="fan" aria-hidden="true"></div>
+    </div>
+
+    <div id="gameScr" hidden>
+      <div class="table">
+        <div class="bar">
+          <div class="opp"><span class="turn" id="botLbl">Бот</span><div class="backs" id="botHand"></div></div>
+          <div class="row">
+            <span class="chip" id="scoreChip">Дұрыс 0 · Қате 0</span>
+            <button class="btn ghost" id="quitBtn">Ойынды аяқтау</button>
+          </div>
+        </div>
+        <div class="mid">
+          <div class="pilebox">
+            <button class="card back deck" id="deckBtn" aria-label="Колодадан карта алу"></button>
+            <span class="note" id="deckCnt"></span>
+          </div>
+          <div class="pilebox pile"><div id="topCard"></div><span class="curc note">Қазіргі түс: <span class="dot" id="curDot"></span><b id="curName"></b></span></div>
+          <div class="log" id="log"><h3>Жүрістер</h3><div id="logBody">Ойын басталды. Сіз бірінші жүресіз.</div></div>
+        </div>
+        <div>
+          <div class="bar"><span class="turn" id="turnLbl">Сіздің жүрісіңіз</span><span class="note" id="hint"></span></div>
+          <div class="hand" id="myHand"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-results">
+    <h2>Оқушылардың нәтижелері</h2>
+    <p class="lead" id="resSrc">Жүктелуде…</p>
+    <div class="kpis" id="kpis"></div>
+    <div class="filters">
+      <div><label for="clsF">Сынып</label><select id="clsF"><option value="">Барлық сынып</option></select></div>
+      <div><label for="nameF">Оқушыны іздеу</label><input id="nameF" placeholder="Аты-жөні"></div>
+      <button class="btn ghost" id="copyTsv">Кестені көшіру (Excel)</button>
+    </div>
+    <div class="box"><h3>Оқушылар рейтингі</h3><div id="tblStudents"></div></div>
+    <div class="box"><h3>Жиі қате жіберілген сұрақтар</h3><div id="tblMissed"></div></div>
+    <div class="box"><h3>Соңғы ойындар</h3><div id="tblGames"></div></div>
+    <div class="box" id="importBox" hidden>
+      <h3>Оқушының кодын қосу</h3>
+      <p class="note">Аккаунты жоқ оқушылардың нәтижесі тек өз құрылғысында қалады. Олар ойын соңында шыққан кодты сізге жібереді, ал сіз оны осы жерге қойып, кестеге қосасыз. Бірнеше кодты әр жолға бір-бірден қоюға болады.</p>
+      <textarea id="impText" class="code" placeholder="HU1-…"></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn teal" id="impBtn">Кестеге қосу</button><span class="note" id="impMsg"></span></div>
+    </div>
+  </section>
+
+  <section class="view" id="v-rules">
+    <h2>Ойын ережесі</h2>
+    <p class="lead">Қағаз нұсқадағы карталар сол күйінде, бірақ мұнда жауапты бот пен компьютер тексереді.</p>
+    <div class="rules">
+      <div class="box"><h3>Жүріс</h3><ol>
+        <li>Әркім 7 картадан алады (басында өзгертуге болады).</li>
+        <li>Үстіңгі картаның <b>түсіне</b> немесе <b>белгісіне</b> сәйкес картаны тастай аласыз. Жоқер кез келген уақытта жүреді.</li>
+        <li>Картаны басқанда оның сұрағы шығады. Дұрыс жауап берсеңіз ғана карта тасталады.</li>
+        <li>Қате жауап берсеңіз, карта қолыңызда қалады, айыпқа 1 карта аласыз, жүріс ботқа өтеді.</li>
+        <li>Сәйкес карта болмаса, колодадан 1 карта алыңыз, жүріс ботқа өтеді.</li>
+        <li>Қолындағы карталардан бірінші құтылған ойыншы жеңеді.</li>
+      </ol></div>
+      <div class="box"><h3>Карталар</h3><div class="legend">
+        <div><span class="dot" style="background:var(--R)"></span>Қызыл — Тарихи даталар</div>
+        <div><span class="dot" style="background:var(--Y)"></span>Сары — Ұлы тұлғалар</div>
+        <div><span class="dot" style="background:var(--G)"></span>Жасыл — Тарихи оқиғалар мен шайқастар</div>
+        <div><span class="dot" style="background:var(--B)"></span>Көк — География және археология</div>
+        <div><b>⊘</b> Өткізу — қарсылас жүрісін өткізеді, сіз тағы жүресіз</div>
+        <div><b>⇄</b> Бағыт — екі ойыншы болғандықтан, өткізу сияқты</div>
+        <div><b>+1</b> — қарсылас 1 карта алып, жүрісін өткізеді</div>
+        <div><b>✦</b> Жоқер — түсті өзіңіз таңдайсыз (History UNO сұрағы)</div>
+        <div><b>+2</b> Жоқер — түсті таңдайсыз, қарсылас 2 карта алады</div>
+      </div></div>
+      <div class="box"><h3>Бот</h3><p>Бот та сұраққа жауап береді. Жеңіл деңгейде шамамен 55%, орташада 75%, қиында 90% жағдайда дұрыс жауап береді. Боттың сұрағы мен дұрыс жауабы оң жақта көрсетіледі, сондықтан оның жүрісінен де үйренуге болады.</p></div>
+      <div class="box"><h3>Нәтижелер</h3><p>Ойын біткенде нәтиже (жеңіс, дұрыс және қате жауаптар, қате кеткен сұрақтар) «Нәтижелер» бетіне сақталады. Жазу құқығы жоқ оқушыда нәтиже өз құрылғысында қалады, ал ол көрсеткен кодты мұғалім кестеге қоса алады.</p></div>
+    </div>
+  </section>
+</main>
+
+<div class="ov" id="ovQ"><div class="qcard" role="dialog" aria-modal="true" aria-labelledby="qText">
+  <div class="qhead" id="qHead"></div>
+  <div class="qbody"><div id="qText"></div><div class="opts" id="qOpts"></div><div class="fb" id="qFb"></div>
+  <button class="btn" id="qNext" hidden>Жалғастыру</button></div>
+</div></div>
+<div class="ov" id="ovC"><div class="endbox" role="dialog" aria-modal="true"><h2>Түсті таңдаңыз</h2><div class="colors" id="colorBtns"></div></div></div>
+<div class="ov" id="ovE"><div class="endbox" role="dialog" aria-modal="true" id="endBox"></div></div>
+<div class="banner" id="banner"></div>
+
+<script>
+{
+const CAT={R:{n:'Тарихи даталар',s:'Даталар'},Y:{n:'Ұлы тұлғалар',s:'Тұлғалар'},G:{n:'Тарихи оқиғалар мен шайқастар',s:'Оқиғалар'},B:{n:'География және археология',s:'География'},W:{n:'History UNO',s:'History UNO'}};
+const CNAME={R:'Қызыл',Y:'Сары',G:'Жасыл',B:'Көк'};
+const CVAR={R:'var(--R)',Y:'var(--Y)',G:'var(--G)',B:'var(--B)'};
+const SYM={skip:'⊘',rev:'⇄',p1:'+1',wild:'✦',w2:'+2'};
+const ACT=['skip','rev','p1','w2'];
+const ACC={easy:.55,mid:.75,hard:.9};
+const DNAME={easy:'Жеңіл',mid:'Орташа',hard:'Қиын'};
+
+const DATA={
+R:[['1','960 жыл','Қарахан мемлекетінде ислам мемлекеттік дін деп жариялануы'],['1','552 жыл','Бумын қаған жужандарды жеңіп, Түркі қағанатын құрды'],['2','1946 жыл','Қазақ КСР Ғылым академиясының құрылуы'],['2','751 жыл','Атлах шайқасы'],['3','756–940 жылдар','Қарлұқ мемлекетінің өмір сүрген кезеңі'],['3','1382 жыл','Тоқтамыс хан Мәскеуді өртеп, орыс князьдарының алым-салық төлеуін қалпына келтірді'],['4','1643 жыл','Орбұлақ шайқасы'],['4','1729/1730 жылдар','Аңырақай шайқасы'],['5','Б.з.б. I мыңжылдықтың басы','Темірді игеру басталды'],['5','2010 жыл','Қазақстанның ЕҚЫҰ-ға төрағалық етуі'],['6','1949 жыл','Семей полигонындағы алғашқы атомдық жарылыс'],['6','870 жыл','Әбу Насыр әл-Фарабидің дүниеге келуі'],['7','1538–1580 жылдар','Хақназар ханның билік құрған кезеңі'],['7','1783–1797 жылдар','Сырым Датұлы бастаған ұлт-азаттық көтеріліс'],['8','1312–1342 жылдар','Алтын Ордада Өзбек ханның билік құрған жылдары'],['8','1866–1937 жылдар','Әлихан Бөкейхановтың өмір сүрген жылдары'],['9','1979 жыл','Целиноградта неміс автономиясын құруға қарсы наразылық шеруі'],['9','1993 жыл, 15 қараша','Ұлттық валюта — теңгенің енгізілуі'],['skip','1465 жыл','Қазақ хандығының құрылуы'],['skip','1913–1918 жылдар','«Қазақ» жалпыұлттық газетінің шығуы'],['rev','1990 жыл, 25 қазан','Қазақ КСР-інің Мемлекеттік егемендігі туралы Декларацияның қабылдануы'],['rev','1845–1904 жылдар','Абай Құнанбайұлының өмір сүрген жылдары'],['p1','1628/1629–1652 жылдар','Жәңгір ханның билік құрған кезеңі'],['p1','2019 жыл','Қасым-Жомарт Тоқаевтың Президент болып сайлануы']],
+Y:[['1','«Қасқа жол» заңдар жинағын шығарып, Қазақ елін Еуропаға танытқан хан','Қасым хан'],['1','XVI ғ. ортасында Қазақ хандығын қайта біріктіріп, шекарасын кеңейткен хан','Хақназар хан'],['2','Ислам дінін мемлекеттік дін ретінде ресми бекіткен Қарахан билеушісі','Мұса хан'],['2','Түргеш қағанатының негізін қалаған билеуші','Үшлік қаған'],['3','Абылай хан «Дарабоз» атаған, жоңғарларға қарсы 103 шайқасқа қатысқан батыр','Қабанбай батыр'],['3','1643 ж. Орбұлақ шайқасында Жәңгір ханға 20 мың әскермен көмекке келген батыр','Жалаңтөс батыр'],['4','«Оян, қазақ!» өлеңдер жинағының авторы, Алаш қайраткері','Міржақып Дулатұлы'],['4','Ташкент, Түркістан, Сайрамды Қазақ хандығына қосып, Мәскеумен елшілік алмасқан хан','Тәуекел хан'],['5','Тұңғыш қазақ қыздар мектебін ашқан ағартушы-педагог','Ыбырай Алтынсарин'],['5','1836–1838 жж. Бөкей Ордасындағы шаруалар көтерілісінің басшылары','Исатай Тайманұлы мен Махамбет Өтемісұлы'],['6','Түркістан (Қоқан) автономиясының төрағаларының бірі, түркі бірлігін көксеген қайраткер','Мұстафа Шоқай'],['6','Қазақстан Ғылым академиясының тұңғыш президенті, геолог','Қаныш Сәтбаев'],['7','Қазақстанның XIX ғасырдағы тарихын зерттеген тұңғыш профессор-тарихшы','Ермұхан Бекмаханов'],['7','Ислам дінінің сопылық бағытын таратушы, ұлы ақын әрі ойшыл','Қожа Ахмет Ясауи'],['8','Арабтарға қарсы табанды күресі үшін «Сүзеген» атанған түргеш қағаны','Сұлу қаған'],['8','Екі мәрте Кеңес Одағының Батыры атанған ұшқыш-шабуылдаушы','Талғат Бигелдинов'],['9','«Қазақ» газетінің редакторы, ұлттық әліпбидің атасы, Алаш қайраткері','Ахмет Байтұрсынұлы'],['9','Абылай ханның бас кеңесшісі, ел бірлігін жырлаған жырау','Бұқар жырау'],['skip','«Сарыарқа», «Адай», «Кішкентай» күйлерінің авторы','Құрманғазы Сағырбайұлы'],['skip','«Аз и Я» кітабының авторы, «Невада–Семей» қозғалысының жетекшісі','Олжас Сүлейменов'],['rev','Қазақ кино өнерінің негізін қалаушы, «Тақиялы періште», «Атаманның ақыры» фильмдерінің режиссері','Шәкен Айманов'],['rev','«Құлагер», «Балқадиша» әндерінің авторы','Ақан сері Қорамсаұлы'],['p1','1945 ж. 30 сәуірде Рейхстагқа Жеңіс туын тіккен қазақ батыры','Рақымжан Қошқарбаев'],['p1','1219–1220 жж. Отырардың 6 айлық қорғанысын басқарған билеуші','Қайыр хан (Иналшық)']],
+G:[['1','751 жылы арабтар мен Қытай әскері арасында болған шайқас','Атлах шайқасы'],['1','1380 ж. Мәскеу князі Дмитрий Донской Мамайды жеңген шайқас','Куликово шайқасы'],['2','Есім ханның Тұрсын ханды талқандауының тарихтағы атауы','«Қатаған қырғыны»'],['2','Жәңгір ханның окоп әдісімен Батыр қонтайшыны жеңген шайқасы','Орбұлақ шайқасы'],['3','1723–1727 жж. жоңғарлардың тұтқиыл шабуылынан болған халық апаты','«Ақтабан шұбырынды»'],['3','1729/1730 жж. жоңғарларға қарсы соғыста түбегейлі жеңіске жеткен шайқас','Аңырақай шайқасы'],['4','1771 ж. Еділ қалмақтарының Жоңғарияға қашуы кезіндегі шайқастардың атауы','«Шаңды жорық»'],['4','1773–1775 жж. қазақтар қолдаған Ресейдегі шаруалар соғысының басшысы','Емельян Пугачев'],['5','1783–1797 жж. Кіші жүздегі отаршылдыққа қарсы алғашқы ірі көтеріліс','Сырым Датұлы көтерілісі'],['5','1870 ж. Иса Тіленбайұлы мен Досан Тәжіұлы бастаған адайлар көтерілісі','Маңғыстау көтерілісі'],['6','2017 жылы Астанада өткен халықаралық мамандандырылған көрме','ЭКСПО-2017'],['6','Тарихи-мәдени ескерткіштерді қалпына келтіру үшін 2004 ж. қабылданған мемлекеттік бағдарлама','«Мәдени мұра» бағдарламасы'],['7','1219–1220 жж. Қайыр хан бастаған тұрғындардың моңғол әскеріне 6 ай төтеп берген ерлігі','Отырар қорғанысы'],['7','1459–1460 жж. Әбілқайыр ханға наразы рулардың Моғолстанға (Шу бойына) қоныс аударуы','Керей мен Жәнібектің көшуі'],['8','1710 ж. Бөгенбай батырды жасақ басшысы етіп сайлаған үш жүз өкілдерінің жиыны','Қарақұм құрылтайы'],['8','1726 ж. Әбілқайыр ханды бүкілқазақ жасағының бас қолбасшысы етіп сайлаған жиын','Ордабасы құрылтайы'],['9','1986 ж. 17–18 желтоқсандағы Алматы жастары шеруінің түрткісі','Г. Колбиннің бірінші хатшы болып тағайындалуы'],['9','1837 ж. қарашада Исатай мен Махамбет көтерілісшілерінің Гекке әскерімен ірі шайқасы','Тастөбе шайқасы'],['skip','Шоқан Уәлихановтың ғылымға қосқан ең үлкен ерлік сапары','Қашқария сапары (1858–1859)'],['skip','1847 ж. Кенесары ханның қырғыз манаптарымен шайқаста қаза тапқан жері','Кекілік-Сеңгір'],['rev','1979 ж. маусымда неміс автономиялық облысын құруға қарсы өткен халық наразылығы','Целиноград оқиғасы'],['rev','2010 жылы Астанада өткен ірі халықаралық жиын','ЕҚЫҰ саммиті'],['p1','1918–1921 жж. азық-түлік салғырты мен сауданы тыюмен ерекшеленген кеңестік саясат','«Әскери коммунизм» саясаты'],['p1','1985 ж. М. Горбачев жариялаған жариялылық пен жеделдету бағыты','«Қайта құру» саясаты']],
+B:[['1','Солтүстік Қазақстандағы, жылқы сүйектері көп табылған энеолит дәуірінің ескерткіші','Ботай тұрағы'],['1','Ачинск маңындағы Андроново селосының атымен аталған қола дәуірінің мәдениеті','Андронов мәдениеті'],['2','1969 ж. К. Ақышев «Алтын адамды» тапқан сақ қорғаны','Есік обасы'],['2','Батыс Түрік қағанатының астанасы','Суяб қаласы'],['3','Қимақ қағанатының астанасы','Имақия қаласы'],['3','Маңғыстау өңіріндегі тас дәуірінің ежелгі тұрағы','Шебір тұрағы'],['4','Ақ Орданың астанасы','Сығанақ қаласы'],['4','Ақмола облысы Малиновка ауылындағы саяси қуғын-сүргін жылдарының әйелдер лагері','АЛЖИР'],['5','Ыстықкөл маңындағы Үйсін мемлекетінің астанасы','Қызыл Аңғар (Чигучэн)'],['5','Түркістан маңындағы Батыс Түрік қағандарының жазғы ордасы','Мыңбұлақ'],['6','Түркістанда Әмір Темірдің бұйрығымен салынған сәулет жауһары (ЮНЕСКО)','Қожа Ахмет Ясауи кесенесі'],['6','Қазақ хандығы құрылған Жамбыл облысы Мойынқұм ауданындағы тарихи өңір','Қозыбасы'],['7','Түркістан маңында Тәуке хан «Жеті жарғыны» қабылдаған төбе','Күлтөбе'],['7','Жезқазған маңындағы саяси тұтқындарға арналған ерекше режимді лагерь','Степлаг'],['8','Орталық Қазақстандағы соңғы қола дәуірінің мәдениеті','Беғазы-Дәндібай мәдениеті'],['8','1848 ж. Қарқаралы уезінде ашылған Қазақстандағы ең ірі жәрмеңке','Қоянды жәрмеңкесі'],['9','Долинка кентінде орналасқан ГУЛАГ жүйесінің ең ірі лагері','Қарлаг'],['9','Шымкент маңындағы 1726 ж. үш жүздің басы қосылған киелі тау','Ордабасы тауы'],['skip','Алтын Орданың алғашқы астанасы','Сарай-Бату'],['skip','Ұлытау өңіріндегі ортағасырлық сәулет өнерінің бірегей ескерткіштері','Алаша хан және Жошы хан кесенелері'],['rev','1920–1925 жж. Қазақ АКСР-інің алғашқы астанасы','Орынбор'],['rev','Алашорда үкіметінің орталығы болған («Алаш» қаласы атанған) шаһар','Семей'],['p1','Сырдарияның төменгі ағысындағы Оғыз мемлекетінің астанасы','Янгикент'],['p1','1916 ж. Амангелді Иманов бастаған көтерілістің ең ірі орталықтарының бірі','Торғай өңірі']]
+};
+const U=[['603 жылы Түркі қағанатының екіге бөлінуі нәтижесінде қандай мемлекеттер құрылды?','Батыс және Шығыс Түрік қағанаттары'],['1470–1480 жж. Шайбани хан мен қазақ хандары күрескен стратегиялық аймақ','Сырдария бойындағы қалалар'],['1916 ж. 25 маусымдағы патша жарлығының басты мазмұны','Бұратана халықтарды тыл жұмысына алу'],['751 ж. Атлах шайқасының Орталық Азия үшін басты тарихи салдары','Ислам діні мен өркениетінің таралуы'],['Семей полигонында жасалған ядролық жарылыстардың жалпы саны','450-ден астам'],['Қазақ КСР-інде «Тіл туралы» заң қашан қабылданды?','1989 жылы 22 қыркүйекте'],['«Қыш құмыралар заманы» деп аталған дәуір','Неолит'],['Қарахан әулетінен исламды алғаш қабылдаған билеуші','Сатұқ Боғра хан'],['Алтын Ордада ислам дінін мемлекеттік дін етіп жариялаған хан','Өзбек хан'],['Абай, Жетісу, Ұлытау облыстары қай жылы құрылды?','2022 жылы'],['«Халықтардың ұлы қоныс аударуын» бастаған тайпалар','Ғұндар'],['Ежелгі түркі жазуы қалай аталады?','Руна жазуы'],['Сыр бойындағы қалалар үшін Шайбанимен күрескен Керей ханның ұлы','Бұрындық хан'],['Адамзат тарихындағы ең ұзаққа созылған дәуір','Тас дәуірі'],['Ғұн державасының негізін қалаған билеуші','Мөде шаньюй'],['«Ақиқат сыйы» дастанының авторы','Ахмет Йүгінеки'],['1943 ж. жарық көрген «Қазақ КСР тарихы» еңбегінің авторларының бірі','Ермұхан Бекмаханов'],['1594 ж. Мәскеуге Тәуекел ханның елшілігін басқарып барған','Құл-Мұхаммед'],['Е. Пугачев бастаған шаруалар соғысының мерзімі','1773–1775 жылдар'],['Германияның КСРО-ға қарсы қауырт соғыс жоспары','«Барбаросса»'],['Сақтар өнеріндегі басты стиль','«Аң стилі»'],['«Түрік» этнонимі қытай деректерінде алғаш қай жылы кездеседі?','542 жылы'],['«Құтты білік» дастанының авторы','Жүсіп Баласағұни'],['Алғашқы қазақ ұлттық театрында қойылған тұңғыш пьеса','«Еңлік-Кебек»'],['КСРО-да азық-түлік карточка жүйесі қашан жойылды?','1947 жылы'],['Кенесары Қасымұлы бастаған көтеріліс қашан болды?','1837–1847 жылдар'],['XII ғ. басында Жетісуға басып кіріп, Қарахандарды өзіне тәуелді еткен тайпа','Қарақытайлар (қидандар)'],['Д. Қонаев Қазақстан КП ОК бірінші хатшысы болған жылдар','1960–1962 және 1964–1986 жылдар'],['Әл-Фараби қай қалада дүниеге келді?','Отырар (Фараб)'],['«Алтын адамды» 1969 ж. ашқан археолог','Кемел Ақышев'],['«Диуани хикмет» еңбегінің авторы','Қожа Ахмет Ясауи'],['Ноғай Ордасының негізін қалаушы','Едіге'],['Орта жүзде хандық билікті жойған «Сібір қырғыздары туралы Жарғы» қабылданған жыл','1822 жылы'],['«Диуани лұғат ат-түрік» еңбегінің авторы','Махмұд Қашғари'],['«Тарих-и Рашиди» еңбегінде Қазақ хандығының құрылуын жазған ғалым','Мұхаммед Хайдар Дулати'],['Бұланты шайқасы өткен жер тарихта қалай аталды?','«Қалмақ қырылған»'],['Керей мен Жәнібекті қолдаған Моғолстан ханы','Есен Бұға'],['Кіші жүз қазақтарынан ант алуға келген Ресей елшілігінің басшысы','А. Тевкелев'],['Еуразияның Шығысы мен Батысын жалғастырған ежелгі сауда жолы','Ұлы Жібек жолы'],['1711–1781 жж. өмір сүрген қазақтың ұлы ханы','Абылай хан'],['Хақназар хан қай жылы қаза тапты?','1580 жылы'],['Голощекиннің «Кіші Қазан» саясатының ауыр салдары','Ұлы ашаршылық (1931–1933)'],['1791 ж. Кіші жүздің ханы болып сайланған','Ералы хан'],['1941 ж. «Ленинградтық өренім!» жырын жазған ақын','Жамбыл Жабаев'],['Ақ Орданың соңғы ханы','Барақ хан'],['«Өзбек ұлысы», «Шайбани ұлысы» деп те аталған хандық','Әбілқайыр хандығы'],['Қазақстанның тәуелсіздігін бірінші болып таныған мемлекет','Түркия'],['Тәуке ханның заңдар жинағы','«Жеті жарғы»'],['«Шығанақ», «Миллионер», «Қарағанды» шығармаларының авторы','Ғабиден Мұстафин'],['Парсы жазбаларындағы «сақ» сөзінің мағынасы','Құдіретті ер адамдар'],['«Орынбор қазақтары туралы Жарғы» қай жылы шықты?','1824 жылы'],['«Невада–Семей» антиядролық қозғалысының жетекшісі','Олжас Сүлейменов'],['1867–1868 жж. «Ережелер» бойынша Иранмен, Қытаймен келіссөз жүргізуге құқық берілген әкімшілік','Түркістан генерал-губернаторлығы'],['1227–1255 жж. Жошы ұлысын (Алтын Орданы) билеген хан','Батый хан'],['Ұлттық валюта — теңге қай жылы енгізілді?','1993 жылы'],['Әбілқайыр ханды 1748 ж. өлтірген','Барақ сұлтан'],['«Отырар апатына» себеп болған Шыңғыс хан керуенінің қырылуы қай жылы?','1218 жылы'],['Ғылыми еңбегі үшін 25 жылға сотталған тарихшы-ғалым','Ермұхан Бекмаханов'],['Мезолит дәуірінің басты жаңалығы','Садақ пен жебенің ойлап табылуы'],['1243 ж. Алтын Орда мемлекетінің негізін қалаған хан','Батый хан'],['«Жеті жарғы» қай ханның тұсында қабылданды?','Тәуке хан'],['Ыбырай Алтынсариннің 1879 ж. жарық көрген оқулығы','«Қазақ хрестоматиясы»'],['Қазақстанның БҰҰ-ға мүше болған күні','1992 жылы 2 наурыз'],['Кейінгі палеолитті алмастырған дәуір','Мезолит'],['1929 ж. Қызылордадан ауысқан Қазақ АКСР-інің астанасы','Алматы'],['Қазақ халқынан шыққан тұңғыш ғарышкер','Тоқтар Әубәкіров'],['КСРО тарихындағы 1960 жж. ортасы мен 1980 жж. ортасы аралығындағы кезеңнің атауы','Тоқырау жылдары'],['Қамал немесе қала ішіндегі мықты қорғаныс құрылысы бар бөлік','Цитадель'],['Бүкілқазақтық Алашорда кеңесінің төрағасы','Әлихан Бөкейханов'],['Қазақ қоғамында хан тағына үміткер бола алғандар','Шыңғыс ханның ұрпақтары (төрелер)'],['Қазақстанның Ресейге қосылуы басталған жыл','1731 жылы'],['1783–1797 жж. Сырым Датұлы көтерілісі қамтыған аймақ','Кіші жүз'],['Жаудың 37 ұшағын жеке өзі атып түсірген, екі мәрте Кеңес Одағының Батыры','Сергей Луганский'],['1848 ж. көпес Ботовтың атымен байланысты ірі жәрмеңке ашылған жер','Талды–Қоянды'],['XVII ғ. басында Қазақ хандығында бір мезгілде билік құрған екі хан','Есім хан мен Тұрсын хан'],['Еуропаға жорық жасаған ғұн билеушісі','Аттила'],['1989 ж. маусымда халықтың ірі наразылығы өткен қала','Жаңаөзен'],['Ұйғырлар мен дүнгендер қоныстанған аймақ','Жетісу'],['Торғай көтерілісінің сардарбегі А. Имановтың серігі, мерген','Кейкі батыр'],['А. Байтұрсынұлының сауатсыздықты жоюдағы оқу құралы','«Баяншы»'],['Ноғай Ордасының орталығы Сарайшық қаласы тұрған өзен','Жайық'],['Қазақстан Республикасы Туының авторы','Шәкен Ниязбеков'],['Ликургке теңелген қазақ ханы','Тәуке хан'],['1911 жылы шыға бастаған қазақ журналы','«Айқап»'],['«Қазақ-ноғай ханы» атанған хан','Хақназар хан'],['Тың игеру ресми басталған жыл','1954 жылы'],['Адамзат тарихындағы ең алғашқы тас дәуірі','Палеолит'],['Қарақытай мемлекетін құрған тайпа','Қидандар'],['А. Байтұрсынұлының Орынборда 1911 ж. жарық көрген өлеңдер жинағы','«Маса»'],['А. С. Пушкин Оралда қағазға түсірген қазақ жыры','«Қозы Көрпеш – Баян сұлу»']];
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+
+let DB=null,USER=null,canWrite=false,rows=[],dbLoaded=false;
+
+/* ---------- routing ---------- */
+function route(){if($('#ovE').classList.contains('on')){$('#ovE').classList.remove('on');$('#gameScr').hidden=true;$('#startScr').hidden=false}const v=(location.hash||'#play').slice(1);const ok=['play','results','rules'].includes(v)?v:'play';
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+ok));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===ok));
+  if(ok==='results')renderResults();}
+addEventListener('hashchange',route);
+
+/* ---------- card markup ---------- */
+function sym(c){return SYM[c.v]||c.v}
+function cardHTML(c,extra='',attrs=''){return `<${attrs.includes('data-i')?'button':'div'} class="card c-${c.c} ${extra}" ${attrs}><span class="cn">${esc(sym(c))}</span><span class="big">${esc(sym(c))}</span><span class="ck">${esc(CAT[c.c==='W'?'W':c.k].s)}</span></${attrs.includes('data-i')?'button':'div'}>`}
+$('#fan').innerHTML=[{c:'R',k:'R',v:'7'},{c:'Y',k:'Y',v:'skip'},{c:'W',k:'W',v:'wild'},{c:'G',k:'G',v:'p1'},{c:'B',k:'B',v:'3'}].map((c,i)=>cardHTML(c,'',`style="transform:translateX(-50%) rotate(${(i-2)*14}deg)"`)).join('');
+
+/* ---------- start form ---------- */
+const saved=lsGet('hu-player',{});$('#fName').value=saved.name||'';$('#fCls').value=saved.cls||'';
+let diff='mid',handN=7;
+$('#diffSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;diff=b.dataset.d;[...$('#diffSeg').children].forEach(x=>x.classList.toggle('on',x===b))});
+$('#handSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;handN=+b.dataset.h;[...$('#handSeg').children].forEach(x=>x.classList.toggle('on',x===b))});
+$('#startBtn').addEventListener('click',()=>{const name=$('#fName').value.trim(),cls=$('#fCls').value.trim();
+  if(name.length<2){$('#startErr').textContent='Аты-жөніңізді жазыңыз — нәтиже соған сақталады.';$('#fName').focus();return}
+  $('#startErr').textContent='';lsSet('hu-player',{name,cls});newGame({name,cls,diff,handN})});
+
+/* ---------- game state ---------- */
+let S=null;
+function buildDeck(){const d=[];let id=0;
+  for(const k of ['R','Y','G','B'])for(const [v,q,a] of DATA[k])d.push({id:id++,c:k,k,v,q,a});
+  for(let i=0;i<4;i++)d.push({id:id++,c:'W',k:'W',v:'wild'});
+  for(let i=0;i<4;i++)d.push({id:id++,c:'W',k:'W',v:'w2'});
+  return shuffle(d)}
+function newGame(p){
+  S={p,deck:buildDeck(),pile:[],me:[],bot:[],color:null,turn:'me',busy:false,over:false,usedU:new Set(),
+     st:{correct:0,wrong:0,draws:0,missed:[],t0:Date.now()}};
+  for(let i=0;i<p.handN;i++){S.me.push(S.deck.pop());S.bot.push(S.deck.pop())}
+  let i=S.deck.findIndex(c=>c.c!=='W'&&!ACT.includes(c.v));const top=S.deck.splice(i,1)[0];S.pile.push(top);S.color=top.c;
+  $('#botLbl').textContent='Бот · '+DNAME[p.diff];
+  $('#logBody').textContent='Ойын басталды. Сіз бірінші жүресіз.';
+  $('#startScr').hidden=true;$('#gameScr').hidden=false;quitArm=false;$('#quitBtn').textContent='Ойынды аяқтау';render()}
+const top=()=>S.pile[S.pile.length-1];
+const playable=c=>c.c==='W'||c.c===S.color||c.v===top().v;
+function drawTo(who,n){let got=0;for(let i=0;i<n;i++){
+  if(!S.deck.length){const t=S.pile.pop();S.deck=shuffle(S.pile);S.pile=[t]}
+  if(!S.deck.length)break;S[who].push(S.deck.pop());got++}return got}
+function assignWild(c){let pool=U.map((x,i)=>i).filter(i=>!S.usedU.has(i));if(!pool.length){S.usedU.clear();pool=U.map((x,i)=>i)}
+  const i=pool[Math.random()*pool.length|0];S.usedU.add(i);c.q=U[i][0];c.a=U[i][1]}
+function qText(c){return c.k==='R'?c.q+' — не болды?':c.q}
+function options(c){const pool=[...new Set(c.k==='W'?U.map(x=>x[1]):DATA[c.k].map(x=>x[2]))].filter(a=>a!==c.a);
+  const dig=/\d/.test(c.a);const same=shuffle(pool.filter(a=>/\d/.test(a)===dig));let pick=same.slice(0,3);
+  if(pick.length<3)pick=pick.concat(shuffle(pool.filter(a=>!pick.includes(a))).slice(0,3-pick.length));
+  return shuffle([c.a,...pick])}
+
+function render(){if(!S)return;
+  $('#botHand').innerHTML=S.bot.slice(0,14).map(()=>'<div class="card back"></div>').join('')+`<span class="chip" style="margin-left:30px">${S.bot.length} карта</span>`;
+  $('#topCard').innerHTML=cardHTML(top());
+  $('#curDot').style.background=CVAR[S.color];$('#curName').textContent=CNAME[S.color];
+  $('#deckCnt').textContent='Колодада '+S.deck.length;
+  $('#scoreChip').textContent=`Дұрыс ${S.st.correct} · Қате ${S.st.wrong}`;
+  const myTurn=S.turn==='me'&&!S.busy&&!S.over;const any=S.me.some(playable);
+  $('#myHand').classList.toggle('wait',!myTurn);
+  $('#myHand').innerHTML=S.me.map((c,i)=>{const ok=myTurn&&playable(c);return cardHTML(c,ok?'can':'',`data-i="${i}" ${ok?'':'disabled'} aria-label="${esc(CAT[c.k].n+' '+sym(c))}"`)}).join('');
+  $('#deckBtn').disabled=!myTurn;$('#deckBtn').classList.toggle('pulse',myTurn&&!any);
+  $('#turnLbl').textContent=S.over?'Ойын аяқталды':myTurn?'Сіздің жүрісіңіз':'Бот ойланып жатыр…';
+  $('#hint').textContent=myTurn?(any?'Жарқырап тұрған карталардың бірін таңдаңыз':'Сәйкес карта жоқ — колодадан карта алыңыз'):''}
+
+function banner(t){const b=$('#banner');b.textContent=t;b.classList.add('show');setTimeout(()=>b.classList.remove('show'),1100)}
+function effect(c,by){const other=by==='me'?'bot':'me';
+  if(c.v==='p1')drawTo(other,1);if(c.v==='w2')drawTo(other,2);return ACT.includes(c.v)}
+
+/* question dialog */
+function ask(c){return new Promise(res=>{
+  const h=$('#qHead');h.className='qhead c-'+c.c;h.innerHTML=`<span class="sym">${esc(sym(c))}</span><span>${esc(CAT[c.k].n)}</span>`;
+  $('#qText').innerHTML=c.k==='R'?`<div class="note" style="color:#5a6190">Бұл уақытта не болды?</div><div class="qdate">${esc(c.q)}</div>`:`<div class="qtext">${esc(c.q)}</div>`;
+  const opts=options(c);$('#qOpts').innerHTML=opts.map((o,i)=>`<button data-o="${i}">${esc(o)}</button>`).join('');
+  $('#qFb').textContent='';$('#qFb').className='fb';$('#qNext').hidden=true;$('#ovQ').classList.add('on');
+  setTimeout(()=>$('#qOpts button')?.focus(),30);
+  $('#qOpts').onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;const ok=opts[+b.dataset.o]===c.a;
+    [...$('#qOpts').children].forEach((x,i)=>{x.disabled=true;if(opts[i]===c.a)x.classList.add('ok')});
+    if(!ok)b.classList.add('bad');
+    $('#qFb').className='fb '+(ok?'ok':'bad');$('#qFb').textContent=ok?'Дұрыс! Карта тасталады.':'Қате. Айыпқа 1 карта аласыз.';
+    $('#qNext').hidden=false;$('#qNext').focus();$('#qNext').onclick=()=>{$('#ovQ').classList.remove('on');res(ok)}}})}
+function pickColor(){return new Promise(res=>{
+  $('#colorBtns').innerHTML=['R','Y','G','B'].map(k=>`<button data-k="${k}" style="background:${CVAR[k]};${k==='Y'?'color:#2a1f00':''}">${CNAME[k]}<br><small>${CAT[k].s}</small></button>`).join('');
+  $('#ovC').classList.add('on');$('#colorBtns button').focus();
+  $('#colorBtns').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('#ovC').classList.remove('on');res(b.dataset.k)}})}
+
+$('#myHand').addEventListener('click',async e=>{const b=e.target.closest('.card[data-i]');if(!b||b.disabled||!S||S.turn!=='me'||S.busy||S.over)return;
+  const c=S.me[+b.dataset.i];if(!c||!playable(c))return;S.busy=true;render();
+  if(c.c==='W')assignWild(c);
+  const ok=await ask(c);
+  if(ok){S.st.correct++;S.me.splice(S.me.indexOf(c),1);S.pile.push(c);
+    S.color=c.c==='W'?await pickColor():c.c;
+    const again=effect(c,'me');render();
+    if(!S.me.length)return finish(true,true);
+    if(S.me.length===1)banner('UNO!');
+    if(again){log(`<b>Сіз</b> «${esc(sym(c))}» тастадыңыз — бот жүрісін өткізеді${c.v==='p1'?', 1 карта алды':c.v==='w2'?', 2 карта алды':''}. Тағы жүріңіз.`);S.busy=false;render();return}
+  }else{S.st.wrong++;if(S.st.missed.length<20)S.st.missed.push([qText(c).slice(0,200),String(c.a).slice(0,200)]);drawTo('me',1);
+    log(`<span class="r-bad">Қате жауап.</span> Дұрыс жауап: <b>${esc(c.a)}</b>. Сіз айыпқа 1 карта алдыңыз.`)}
+  S.turn='bot';S.busy=false;render();botTurn()});
+$('#deckBtn').addEventListener('click',()=>{if(!S||S.turn!=='me'||S.busy||S.over)return;drawTo('me',1);S.st.draws++;
+  log('Сіз колодадан 1 карта алдыңыз.');S.turn='bot';render();botTurn()});
+
+function log(html){$('#logBody').innerHTML=html}
+async function botTurn(){if(S.over)return;S.busy=true;render();await sleep(900);if(S.over)return;
+  const opts=S.bot.filter(playable);
+  if(!opts.length){drawTo('bot',1);log('<b>Бот</b> сәйкес карта таппай, колодадан 1 карта алды.');S.turn='me';S.busy=false;render();return}
+  const cnt=k=>S.bot.filter(x=>x.c===k).length;let c;
+  const acts=opts.filter(x=>ACT.includes(x.v)&&x.c!=='W');const non=opts.filter(x=>x.c!=='W');
+  if(S.me.length<=3&&(acts.length||opts.some(x=>x.v==='w2')))c=acts[0]||opts.find(x=>x.v==='w2');
+  else if(non.length)c=non.sort((a,b)=>cnt(b.c)-cnt(a.c))[0];else c=opts[0];
+  if(c.c==='W')assignWild(c);
+  const ok=Math.random()<ACC[S.p.diff];const wrong=options(c).find(a=>a!==c.a);
+  const qh=`<h3>Боттың картасы: ${esc(CAT[c.k].n)} · ${esc(sym(c))}</h3><div class="q">${esc(qText(c))}</div>`;
+  if(ok){S.bot.splice(S.bot.indexOf(c),1);S.pile.push(c);
+    let nc=c.c;if(c.c==='W'){nc=['R','Y','G','B'].sort((a,b)=>cnt(b)-cnt(a))[0]}S.color=nc;
+    const again=effect(c,'bot');
+    log(qh+`<div class="r-ok">Бот дұрыс жауап берді: <b>${esc(c.a)}</b></div>`+(c.c==='W'?`<div>Бот таңдаған түс: <b>${CNAME[nc]}</b></div>`:'')+(again?`<div>Сіздің жүрісіңіз өтеді${c.v==='p1'?', +1 карта':c.v==='w2'?', +2 карта':''}.</div>`:''));
+    render();if(!S.bot.length)return finish(false,true);if(S.bot.length===1)banner('Ботта UNO!');
+    if(again){await sleep(1600);return botTurn()}
+  }else{drawTo('bot',1);log(qh+`<div class="r-bad">Бот қателесті: «${esc(wrong||'—')}»</div><div>Дұрыс жауап: <b>${esc(c.a)}</b>. Бот айыпқа 1 карта алды.</div>`)}
+  S.turn='me';S.busy=false;render()}
+
+let quitArm=false;
+$('#quitBtn').addEventListener('click',()=>{if(!S||S.over)return;if(!quitArm){quitArm=true;$('#quitBtn').textContent='Иә, аяқтаймын';setTimeout(()=>{quitArm=false;if(S&&!S.over)$('#quitBtn').textContent='Ойынды аяқтау'},3000);return}
+  finish(false,false)});
+
+/* ---------- finishing & saving ---------- */
+const enc=o=>'HU1-'+btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+function dec(s){s=String(s).trim();if(!s.startsWith('HU1-'))throw 0;return JSON.parse(decodeURIComponent(escape(atob(s.slice(4)))))}
+const int=(v,max)=>{v=Math.round(+v);return Number.isFinite(v)?Math.max(0,Math.min(max,v)):0};
+function clean(o,id){o=o&&typeof o==='object'?o:{};return{
+  id:/^[a-z0-9]{6,40}$/.test(String(id||o.id))?String(id||o.id):'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,8),
+  name:String(o.name||'').slice(0,60),cls:String(o.cls||'').slice(0,20),diff:['easy','mid','hard'].includes(o.diff)?o.diff:'mid',
+  win:o.win===true,done:o.done!==false,correct:int(o.correct,999),wrong:int(o.wrong,999),secs:int(o.secs,86400),
+  at:int(o.at,4102444800000)||Date.now(),missed:Array.isArray(o.missed)?o.missed.slice(0,20).filter(m=>Array.isArray(m)).map(m=>[String(m[0]??'').slice(0,200),String(m[1]??'').slice(0,200)]):[]}}
+async function save(rec){
+  if(DB&&canWrite!==false){try{await DB.collection('games').doc(rec.id).set(rec);return 'db'}catch(e){if(e&&e.code==='invalid_argument')canWrite=false}}
+  const loc=lsGet('hu-local',[]);loc.unshift(rec);lsSet('hu-local',loc.slice(0,200));return 'local'}
+async function finish(win,done){S.over=true;S.busy=false;render();
+  const st=S.st,tot=st.correct+st.wrong;
+  const rec=clean({name:S.p.name,cls:S.p.cls,diff:S.p.diff,win,done,correct:st.correct,wrong:st.wrong,secs:(Date.now()-st.t0)/1000,at:Date.now(),missed:st.missed});
+  if(done)banner(win?'Жеңіс!':'Бот жеңді');
+  const acc=tot?Math.round(st.correct/tot*100):0;
+  $('#endBox').innerHTML=`<h2>${win?'Құттықтаймыз, сіз жеңдіңіз!':done?'Бұл жолы бот жеңді':'Ойын аяқталды'}</h2>
+   <div class="stats"><div class="stat"><b>${st.correct}</b><span>дұрыс</span></div><div class="stat"><b>${st.wrong}</b><span>қате</span></div><div class="stat"><b>${acc}%</b><span>дәлдік</span></div></div>
+   ${st.missed.length?`<div><b>Қайталап шығыңыз:</b><ul>${[...new Map(st.missed.map(m=>[m[0],m])).values()].slice(0,5).map(m=>`<li>${esc(m[0])} — <b>${esc(m[1])}</b></li>`).join('')}</ul></div>`:''}
+   <div class="note" id="saveMsg">Нәтиже сақталуда…</div><div id="codeWrap"></div>
+   <div class="row"><button class="btn" id="againBtn">Қайта ойнау</button><button class="btn ghost" id="toRes">Нәтижелерді көру</button></div>`;
+  $('#ovE').classList.add('on');
+  $('#againBtn').onclick=()=>{$('#ovE').classList.remove('on');newGame(S.p)};
+  $('#toRes').onclick=()=>{$('#ovE').classList.remove('on');$('#gameScr').hidden=true;$('#startScr').hidden=false;location.hash='#results'};
+  const where=await save(rec);
+  if(where==='db')$('#saveMsg').textContent='Нәтиже мұғалімнің кестесіне сақталды.';
+  else{$('#saveMsg').textContent='Нәтиже тек осы құрылғыда сақталды. Мұғалімнің кестесіне түсу үшін мына кодты көшіріп, мұғаліміңізге жіберіңіз:';
+    $('#codeWrap').innerHTML=`<textarea class="code" readonly id="codeTa"></textarea><div class="row" style="margin-top:8px"><button class="btn teal" id="copyCode">Кодты көшіру</button></div>`;
+    $('#codeTa').value=enc(rec);$('#copyCode').onclick=async()=>{try{await navigator.clipboard.writeText($('#codeTa').value);$('#copyCode').textContent='Көшірілді'}catch(e){$('#codeTa').select();$('#copyCode').textContent='Белгіленді — Ctrl+C басыңыз'}}}
+  if(!DB)renderResults()}
+
+/* ---------- results ---------- */
+const fmtD=t=>{try{return new Date(t).toLocaleString('kk-KZ',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}};
+const fmtT=s=>Math.floor(s/60)+' мин '+String(s%60).padStart(2,'0')+' с';
+function source(){return DB?rows:lsGet('hu-local',[]).map(r=>clean(r))}
+function renderResults(){
+  const all=source();
+  $('#resSrc').textContent=DB?(dbLoaded?'Барлық оқушылардың нәтижелері осы жерге жиналады. Кесте автоматты түрде жаңарады.':'Нәтижелер жүктелуде…'):'Бұл құрылғыда ортақ кестеге қосылу мүмкін емес, сондықтан тек осы құрылғыда ойналған ойындар көрсетіледі.';
+  const sel=$('#clsF'),cur=sel.value;const classes=[...new Set(all.map(r=>r.cls).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">Барлық сынып</option>'+classes.map(c=>`<option ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
+  const nf=$('#nameF').value.trim().toLowerCase();
+  const R=all.filter(r=>(!sel.value||r.cls===sel.value)&&(!nf||r.name.toLowerCase().includes(nf)));
+  const tc=R.reduce((s,r)=>s+r.correct,0),tw=R.reduce((s,r)=>s+r.wrong,0);
+  const studs={};for(const r of R){const k=(r.name.trim().toLowerCase()+'|'+r.cls.trim().toLowerCase());
+    const s=studs[k]||(studs[k]={name:r.name,cls:r.cls,g:0,w:0,c:0,x:0,last:0});s.g++;if(r.win)s.w++;s.c+=r.correct;s.x+=r.wrong;s.last=Math.max(s.last,r.at)}
+  const S2=Object.values(studs).map(s=>({...s,acc:s.c+s.x?Math.round(s.c/(s.c+s.x)*100):0})).sort((a,b)=>b.w-a.w||b.acc-a.acc||b.g-a.g);
+  $('#kpis').innerHTML=[[R.length,'ойын'],[S2.length,'оқушы'],[(tc+tw?Math.round(tc/(tc+tw)*100):0)+'%','дұрыс жауап'],[(R.length?Math.round(R.filter(r=>r.win).length/R.length*100):0)+'%','жеңіс']].map(([b,s])=>`<div class="kpi"><b>${esc(b)}</b><span>${s}</span></div>`).join('');
+  $('#tblStudents').innerHTML=S2.length?`<div class="scroll"><table class="stack"><thead><tr><th>#</th><th>Оқушы</th><th>Сынып</th><th class="n">Ойын</th><th class="n">Жеңіс</th><th>Дұрыс жауап</th><th class="n">Соңғы ойын</th></tr></thead><tbody>${S2.map((s,i)=>`<tr><td>${i+1}</td><td><b>${esc(s.name)}</b></td><td>${esc(s.cls)}</td><td class="n">${s.g}</td><td class="n">${s.w}</td><td>${s.acc}% <span class="note">(${s.c}/${s.c+s.x})</span><div class="meter"><i style="width:${s.acc}%"></i></div></td><td class="n">${esc(fmtD(s.last))}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Әзірге нәтиже жоқ. Бірінші ойын біткенде осы жерде пайда болады.</div>';
+  const miss={};for(const r of R)for(const [q,a] of r.missed){const k=q;(miss[k]||(miss[k]={q,a,n:0})).n++}
+  const M=Object.values(miss).sort((a,b)=>b.n-a.n).slice(0,10);
+  $('#tblMissed').innerHTML=M.length?`<table class="stack"><thead><tr><th>Сұрақ</th><th>Дұрыс жауап</th><th class="n">Қате саны</th></tr></thead><tbody>${M.map(m=>`<tr><td>${esc(m.q)}</td><td><b>${esc(m.a)}</b></td><td class="n">${m.n}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Қате жауаптар әзірге жоқ.</div>';
+  const G=R.slice().sort((a,b)=>b.at-a.at).slice(0,100);
+  $('#tblGames').innerHTML=G.length?`<div class="scroll"><table class="stack"><thead><tr><th>Күні</th><th>Оқушы</th><th>Сынып</th><th>Деңгей</th><th>Нәтиже</th><th class="n">Дұрыс / қате</th><th class="n">Ұзақтығы</th></tr></thead><tbody>${G.map(r=>`<tr><td>${esc(fmtD(r.at))}</td><td>${esc(r.name)}</td><td>${esc(r.cls)}</td><td>${DNAME[r.diff]}</td><td>${!r.done?'<span class="pill s">Тоқтатылды</span>':r.win?'<span class="pill w">Жеңіс</span>':'<span class="pill l">Жеңіліс</span>'}</td><td class="n">${r.correct} / ${r.wrong}</td><td class="n">${fmtT(r.secs)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Ойындар жоқ.</div>';
+  $('#importBox').hidden=!(DB&&canWrite!==false)}
+$('#clsF').addEventListener('change',renderResults);$('#nameF').addEventListener('input',renderResults);
+$('#copyTsv').addEventListener('click',async()=>{const all=source().filter(r=>!$('#clsF').value||r.cls===$('#clsF').value);
+  const t=['Күні\tОқушы\tСынып\tДеңгей\tНәтиже\tДұрыс\tҚате\tСекунд'].concat(all.map(r=>[fmtD(r.at),r.name,r.cls,DNAME[r.diff],!r.done?'Тоқтатылды':r.win?'Жеңіс':'Жеңіліс',r.correct,r.wrong,r.secs].map(x=>String(x).replace(/[\t\n]/g,' ')).join('\t'))).join('\n');
+  try{await navigator.clipboard.writeText(t);$('#copyTsv').textContent='Көшірілді — Excel-ге қойыңыз'}catch(e){$('#copyTsv').textContent='Көшіру мүмкін болмады'}
+  setTimeout(()=>$('#copyTsv').textContent='Кестені көшіру (Excel)',2500)});
+$('#impBtn').addEventListener('click',async()=>{if(!DB)return;const lines=$('#impText').value.split(/\s+/).filter(Boolean);let ok=0,bad=0;
+  $('#impBtn').disabled=true;
+  for(const l of lines){try{const r=clean(dec(l));if(!r.name)throw 0;await DB.collection('games').doc(r.id).set(r);ok++}catch(e){bad++}}
+  $('#impBtn').disabled=false;$('#impMsg').textContent=`Қосылды: ${ok}`+(bad?`, қабылданбады: ${bad}`:'');if(ok)$('#impText').value=''});
+
+/* ---------- storage hookup ---------- */
+route();render();
+(async()=>{try{DB=await window.claude?.use?.('db')}catch(e){DB=null}
+  try{USER=await window.claude?.use?.('user')}catch(e){USER=null}
+  if(USER){try{const c=await USER.can('data.write');canWrite=c===null||c===undefined?null:!!c}catch(e){canWrite=null}}
+  if(!DB){renderResults();return}
+  let timer=setTimeout(()=>{if(!dbLoaded){$('#resSrc').textContent='Нәтижелерге әзірге қосылу мүмкін болмады. Сәлден кейін қайта тексеріңіз.'}},10000);
+  DB.collection('games').orderBy('at','desc').limit(1000).onSnapshot(snap=>{
+    rows=snap.docs.filter(d=>d.exists).map(d=>clean(d.data(),d.id));
+    if(!snap.metadata.fromCache){dbLoaded=true;clearTimeout(timer)}
+    if(location.hash==='#results')renderResults()},
+    err=>{clearTimeout(timer);dbLoaded=true;$('#resSrc').textContent='Нәтижелерді жүктеу мүмкін болмады.'});
+  renderResults()})();
+}
+</script>
+</body>
+</html>
